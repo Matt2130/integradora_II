@@ -82,7 +82,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserByUsername = async (req: Request, res: Response) => {
+export const getUserByEmail = async (req: Request, res: Response) => {
     try {
         const { email } = req.params;
         const user = await User.findOne({ email }); // Mi función para buscar por username
@@ -109,7 +109,7 @@ export const updateDataUser = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "No autenticado" });
     }
 
-    const isAdmin = loggedUser.role === 'Administrador';
+    const isAdmin = loggedUser.role === 'Adm1ni$trad0r';
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
@@ -166,7 +166,7 @@ export const updateDataUser = async (req: Request, res: Response) => {
     if (isAdmin) {
       if (typeof status === 'boolean') user.status = status;
 
-      const validRoles = ['Administrador', 'Mantenimiento', 'Botanico', 'Default'];
+      const validRoles = ['Adm1ni$trad0r', 'M4ntenim1ent0', 'B0t4nic0', 'Default'];
       if (role) {
         if (!validRoles.includes(role)) {
           return res.status(400).json({ message: "El rol especificado no es válido." });

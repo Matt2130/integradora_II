@@ -7,15 +7,15 @@ import { authenticate } from '../middlewares/authenticate';
 const router = Router();
 
 //AUTH-CONTROLLER
-router.post('/login-user',loginMethod);
+router.post('/login-user', loginMethod);
 router.get('/timeTokenLife', getTimeToken);
 router.put('/updateToken/:userId', updateToken);
 
 //USERS-CONTROLLER
 router.post('/createUser', createUser);
-router.get('/getAllUsers', getAllUsers);
-router.get('/getUser/:email', getUserByEmail)
+router.get('/getAllUsers', verifyUserByToken(), getAllUsers);
+router.get('/getUser/:email', verifyUserByToken('Adm1ni$trad0r'), getUserByEmail)
 router.put('/updateDataUser/:userId', authenticate, updateDataUser);
-router.patch('/deleteUser/:userId', deleteUser);
+router.patch('/deleteUser/:userId', verifyUserByToken('Adm1ni$trad0r'), deleteUser);
 
 export default router;

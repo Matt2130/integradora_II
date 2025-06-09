@@ -1,0 +1,73 @@
+# 👉 Documentación
+# Más información: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# ────────────────
+# 📦 Dependencias
+# ────────────────
+node_modules/
+.pnp/
+.pnp.js
+
+# ────────────────
+# 🧪 Testing
+# ────────────────
+coverage/
+
+# ────────────────
+# 🚀 Producción / Build
+# ────────────────
+build/
+dist/
+web-build/
+
+# ────────────────
+# 🔒 Archivos de entorno
+# ────────────────
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ────────────────
+# ⚙️ Expo
+# ────────────────
+.expo/
+expo-env.d.ts
+
+# ────────────────
+# 🧱 Metro bundler
+# ────────────────
+.metro-health-check*
+
+# ────────────────
+# 📱 Native (Android/iOS)
+# ────────────────
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# ────────────────
+# 🧪 Debug y logs
+# ────────────────
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ────────────────
+# 💻 macOS
+# ────────────────
+.DS_Store
+
+# ────────────────
+# 🔤 TypeScript
+# ────────────────
+*.tsbuildinfo

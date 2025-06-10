@@ -37,20 +37,24 @@ export const verifyUserByToken = (requiredRole?: string) => {
 };
 
 export const loginMethod = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: "Credenciales incorrectas" });
+    }
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ message: "Credenciales incorrectas" });
+    const userId = user._id.toString();
+    const accessToken = generateAccessToken(userId, user.role);
+
+    cache.set(userId, accessToken, 60 * 15);
+      return res.status(200).json({ message: "Inicio de sesión exitoso", accessToken });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error al logear usuario" });
   }
-
-  const userId = user._id.toString();
-  const accessToken = generateAccessToken(userId, user.role)
-
-  cache.set(userId, accessToken, 60 * 15);
-
-  return res.json({ accessToken });
 };
 
 export const getTimeToken = (req: Request, res: Response) => {
@@ -75,25 +79,24 @@ export const getTimeToken = (req: Request, res: Response) => {
         });
 
     } catch (error) {
-        return res.status(401).json({ 
-            message: error instanceof Error ? error.message : 'Error desconocido'
-        });
+        return res.status(401).json({ message: error instanceof Error ? error.message : 'Error desconocido' });
     }
 };
 
 export const updateToken = (req: Request, res: Response) => {
+  try { 
     const { userId } = req.params;
-
     const ttl = cache.getTtl(userId); //Tiempo de vida del token
+
     if (!ttl){
-        return res.status(404).json({
-            message: "Token invalido o no existe"
-        });
+        return res.status(404).json({ message: "Token invalido o no existe" });
     }
 
     const newTimeToken: number = 60 * 15;
-    cache.ttl(userId, newTimeToken);
-     //Actualizar el tiempo de vida
+    cache.ttl(userId, newTimeToken); //Actualizar el tiempo de vida
 
-    res.json({ message: "Update"});
+    res.json({ message: "Actualizado con exitó" });
+  } catch (error) {
+      return res.status(500).json({ message: "Error al actualizar el token"})
+  }
 };

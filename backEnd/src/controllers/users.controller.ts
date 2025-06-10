@@ -37,38 +37,21 @@ export const createUser = async (req: Request, res: Response) => {
 
     const salt = await bcrypt.genSalt(12); // Con la libreria de bcrypt se logra encriptar la contraseña
     const hashedPassword = await bcrypt.hash(password, salt); // se genera el salt
-
-    // Crear nuevo usuario
+    
     const newUser = new User({
-        firstName,
-        middleName,
-        lastName,
-        email,
-        phoneNumber,
-        password: hashedPassword,
-        role: "Default"
+      firstName,
+      middleName,
+      lastName,
+      email,
+      phoneNumber,
+      password: hashedPassword,
+      role: "Default"
     });
 
     const savedUser = await newUser.save();
-
-    return res.status(201).json({
-      message: "Usuario creado exitosamente.",
-      user: {
-        id: savedUser._id,
-        firstName: savedUser.firstName,
-        middleName: savedUser.middleName,
-        lastName: savedUser.lastName,
-        email: savedUser.email,
-        phoneNumber: savedUser.phoneNumber,
-        createDate: savedUser.createDate
-      }
-    });
-
-  } catch (error: any) {
-    console.error("Error al crear usuario:", error.message);
-    return res.status(500).json({
-      message: "Error interno al crear usuario.",
-    });
+      return res.status(201).json({ message: "Usuario creado exitosamente.", savedUser });
+  } catch (error) {
+      return res.status(500).json({ message: "Error interno al crear usuario.", error });
   }
 };
 
@@ -77,22 +60,20 @@ export const getAllUsers = async (req: Request, res: Response) => {
     const userList = await User.find({ status: true });
     return res.status(200).json({ userList });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Error al obtener usuarios" });
+    return res.status(500).json({ message: "Error al obtener usuarios", error });
   }
 };
 
 export const getUserByEmail = async (req: Request, res: Response) => {
     try {
         const { email } = req.params;
-        const user = await User.findOne({ email }); // Mi función para buscar por username
+        const userEmail = await User.findOne({ email }); // Mi función para buscar por email
 
-        // condición en caso que no exista
-        if (!user) {
-            return res.status(404).json({ message: "Usuario no encontrado" });
+        if (!userEmail) {
+            return res.status(404).json({ message: "Usuario no encontrado", userEmail });
         }
 
-        return res.status(200).json({ user });// Si se encuentra, devolverlo
+        return res.status(200).json({ userEmail });// Si se encuentra, devolverlo
 
     } catch (error) {
         return res.status(500).json({ message: "Error al buscar usuario", error });
@@ -176,35 +157,28 @@ export const updateDataUser = async (req: Request, res: Response) => {
     }
 
     const updatedUser = await user.save();
-
-    return res.status(200).json({
-      message: "Usuario actualizado correctamente.",
-      user: {
-        id: updatedUser._id,
-        email: updatedUser.email,
-        phoneNumber: updatedUser.phoneNumber,
-        status: updatedUser.status,
-        role: updatedUser.role
-      }
-    });
+      return res.status(200).json({ message: "Usuario actualizado correctamente.", updatedUser });
 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Error al actualizar usuario" });
+      return res.status(500).json({ message: "Error al actualizar usuario" });
   }
 };
 
 export const deleteUser = async (req:Request, res:Response) => {
+  try {
     const { userId } = req.params;
-
+    
     const user = await User.findById(userId);
     if (!user){
-        return res.status(404).json({ message: "Usuario no existe" });
+      return res.status(404).json({ message: "Usuario no existe" });
     }
-
     user.status = false;
     user.deleteDate = new Date;
-
     const deleteUser = await user.save();
     return res.status(201).json({ mesagge:"Usuario dado de baja con exitó", deleteUser });
+  
+  } catch (error) {
+      return res.status(500).json({ message: "Error al querer dar de baja al usuario", error });
+  }
 };

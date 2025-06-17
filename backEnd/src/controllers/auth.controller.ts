@@ -49,7 +49,8 @@ export const loginMethod = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(userId, user.role);
 
     cache.set(userId, accessToken, 60 * 15);
-      return res.status(200).json({ message: "Inicio de sesión exitoso", accessToken });
+      return res.status(200).json({ message: "Inicio de sesión exitoso", token: accessToken });
+
 
   } catch (error) {
     console.error(error);

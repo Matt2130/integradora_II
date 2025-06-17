@@ -1,6 +1,8 @@
+import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { User } from "../models/User"
-import bcrypt from "bcrypt";
+import { generateAccessToken } from "../utils/token";
+import { cache } from "../utils/cache";
 
 //En este archivo hay metodos relacionados con la administracion de los users CRUD básico
 
@@ -35,9 +37,9 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(409).json({ message: "El correo o número telefónico ya están registrados." });
     }
 
-    const salt = await bcrypt.genSalt(12); // Con la libreria de bcrypt se logra encriptar la contraseña
-    const hashedPassword = await bcrypt.hash(password, salt); // se genera el salt
-    
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const newUser = new User({
       firstName,
       middleName,
@@ -49,7 +51,14 @@ export const createUser = async (req: Request, res: Response) => {
     });
 
     const savedUser = await newUser.save();
-      return res.status(201).json({ message: "Usuario creado exitosamente.", savedUser });
+
+    const userId = savedUser._id.toString();
+    const accessToken = generateAccessToken(userId, savedUser.role);
+    //almacenar el token al crear usuario
+    cache.set(userId, accessToken, 60 * 15);
+
+    return res.status(201).json({ message: "Usuario creado correctamente", user: savedUser, accessToken });
+
   } catch (error) {
       return res.status(500).json({ message: "Error interno al crear usuario.", error });
   }

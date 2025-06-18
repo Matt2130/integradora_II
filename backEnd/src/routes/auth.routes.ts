@@ -1,7 +1,8 @@
-import { Router } from "express";
-import { getTimeToken, loginMethod, updateToken, verifyUserByToken  } from '../controllers/auth.controller';
+import { Router, Request, Response } from "express";
+import { getTimeToken, loginMethod, verifyUserByToken  } from '../controllers/auth.controller';
 import { getAllUsers, getUserByEmail, createUser, updateDataUser, deleteUser } from '../controllers/users.controller';   
 import { authenticate } from '../middlewares/authenticate';
+import { replaceAccessToken } from "../utils/token";
 
 
 const router = Router();
@@ -9,7 +10,17 @@ const router = Router();
 //AUTH-CONTROLLER
 router.post('/login-user', loginMethod);
 router.get('/timeTokenLife', getTimeToken);
-router.put('/updateToken/:userId', updateToken);
+router.post('/refresh-token', (req: Request, res: Response) => {
+  const oldToken = req.headers.authorization?.split(' ')[1];
+
+  try {
+    const newToken = replaceAccessToken(oldToken!); // ya definimos esta función antes
+    res.json({ token: newToken });
+  } catch (err) {
+    res.status(401).json({ message: (err as Error).message });
+  }
+});
+
 
 //USERS-CONTROLLER
 router.post('/createUser', createUser);

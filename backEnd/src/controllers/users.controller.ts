@@ -8,7 +8,7 @@ import { cache } from "../utils/cache";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { email, password, confirmPassword, phoneNumber, firstName, middleName, lastName, role } = req.body;
+    const { email, password, confirmPassword, phoneNumber, firstName, middleName, lastName } = req.body;
 
     if (!email || !password || !confirmPassword || !phoneNumber || !firstName || !middleName || !lastName) {
       return res.status(400).json({ message: "Todos los campos obligatorios deben ser proporcionados." });

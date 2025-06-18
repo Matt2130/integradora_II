@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import { generateAccessToken, validateToken } from "../utils/token";
 import jwt from "jsonwebtoken";
 import { cache } from "../utils/cache";
@@ -9,29 +9,36 @@ import bcrypt from "bcrypt";
 //En este archivo están todos los métodos relacionados con el token | controlador User
 
 const ACCESS_SECRET = process.env.JWT_SECRET as string;
-
-export const verifyUserByToken = (requiredRole?: string) => {
+export const verifyUserByToken = (allowedRoles?: string[]): RequestHandler => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = req.header('Authorization')?.replace('Bearer ', '');
-      if (!token) return res.status(401).json({ message: 'Token no proporcionado.' });
+      if (!token) {
+        res.status(401).json({ message: 'Token no proporcionado.' });
+        return;
+      }
 
       const decoded: any = jwt.verify(token, ACCESS_SECRET);
       const user = await User.findById(decoded.userId);
-      if (!user) return res.status(404).json({ message: 'Usuario no encontrado.' });
+      if (!user) {
+        res.status(404).json({ message: 'Usuario no encontrado.' });
+        return;
+      }
 
-      if (requiredRole && user.role !== requiredRole) {
-        return res.status(403).json({ message: 'Acceso denegado.' });
+      if (allowedRoles && !allowedRoles.includes(user.role)) {
+        res.status(403).json({ message: 'Acceso denegado.' });
+        return;
       }
 
       if (cache.get(decoded.userId) !== token) {
-        return res.status(401).json({ message: 'Token inválido o expirado.' });
+        res.status(401).json({ message: 'Token inválido o expirado.' });
+        return;
       }
 
       (req as any).user = user;
       next();
     } catch (error) {
-      return res.status(401).json({ message: 'Token inválido o expirado.' });
+      res.status(401).json({ message: 'Token inválido o expirado.' });
     }
   };
 };

@@ -14,8 +14,8 @@ router.put('/updateToken/:userId', updateToken);
 //USERS-CONTROLLER
 router.post('/createUser', createUser);
 router.get('/getAllUsers', verifyUserByToken(), getAllUsers);
-router.get('/getUser/:email', verifyUserByToken('Adm1ni$trad0r'), getUserByEmail)
+router.get('/getUser/:email', verifyUserByToken(['Adm1ni$trad0r']), getUserByEmail)
 router.put('/updateDataUser/:userId', authenticate, updateDataUser);
-router.patch('/deleteUser/:userId', verifyUserByToken('Adm1ni$trad0r'), deleteUser);
+router.patch('/deleteUser/:userId', verifyUserByToken(['Adm1ni$trad0r']), deleteUser);
 
 export default router;

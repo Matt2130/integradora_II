@@ -31,10 +31,11 @@ const PlantSchema: Schema = new Schema<IPlant>({
     },
     plantationDate: { 
         type: Date, 
-        required: true 
+        default: Date.now
     },
 },
-    { versionKey: false });
+    { versionKey: false }
+);
 
 const BotanicInventorySchema = new Schema<IBotanicInventory>({
     name: {
@@ -48,8 +49,7 @@ const BotanicInventorySchema = new Schema<IBotanicInventory>({
     },
     plants: {
         type: [PlantSchema],
-        required: true,
-        validate: [(array: string | any[]) => array.length > 0, 'Debe contener al menos una planta']
+        default: []
     },
     status: { 
         type: Boolean, 

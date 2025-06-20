@@ -91,20 +91,3 @@ export const getTimeToken = (req: Request, res: Response) => {
     }
 };
 
-export const updateToken = (req: Request, res: Response) => {
-  try { 
-    const { userId } = req.params;
-    const ttl = cache.getTtl(userId); //Tiempo de vida del token
-
-    if (!ttl){
-        return res.status(404).json({ message: "Token invalido o no existe" });
-    }
-
-    const newTimeToken: number = 60 * 15;
-    cache.ttl(userId, newTimeToken); //Actualizar el tiempo de vida
-
-    res.json({ message: "Actualizado con exitó" });
-  } catch (error) {
-      return res.status(500).json({ message: "Error al actualizar el token"})
-  }
-};

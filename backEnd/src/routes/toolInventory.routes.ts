@@ -42,7 +42,4 @@ router.delete('/delete/:id', verifyUserByToken(['Adm1ni$trad0r', 'M4ntenim1ent0'
     deleteTool(req, res);
 });
 
-//Valida token
-//elimina y crea token
-
 export default router

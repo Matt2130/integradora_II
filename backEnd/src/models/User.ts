@@ -26,6 +26,7 @@ const userSchema = new Schema<IUser>({
     },
     middleName: {
         type: String,
+        default: '',
         required: true
     },
     lastName: {

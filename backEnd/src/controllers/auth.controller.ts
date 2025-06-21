@@ -14,31 +14,28 @@ export const verifyUserByToken = (allowedRoles?: string[]): RequestHandler => {
     try {
       const token = req.header('Authorization')?.replace('Bearer ', '');
       if (!token) {
-        res.status(401).json({ message: 'Token no proporcionado.' });
+        res.status(401).json({ message: 'Token requerido' });
         return;
       }
 
-      const decoded: any = jwt.verify(token, ACCESS_SECRET);
+      const decoded = jwt.verify(token, ACCESS_SECRET) as { userId: string };
+      const cachedToken = cache.get(decoded.userId);
+      
+      if (cachedToken !== token) {
+        res.status(401).json({ message: 'Token inválido' });
+        return;
+      }
+
       const user = await User.findById(decoded.userId);
-      if (!user) {
-        res.status(404).json({ message: 'Usuario no encontrado.' });
-        return;
-      }
-
-      if (allowedRoles && !allowedRoles.includes(user.role)) {
-        res.status(403).json({ message: 'Acceso denegado.' });
-        return;
-      }
-
-      if (cache.get(decoded.userId) !== token) {
-        res.status(401).json({ message: 'Token inválido o expirado.' });
+      if (!user || (allowedRoles && !allowedRoles.includes(user.role))) {
+        res.status(403).json({ message: 'Acceso denegado' });
         return;
       }
 
       (req as any).user = user;
       next();
     } catch (error) {
-      res.status(401).json({ message: 'Token inválido o expirado.' });
+      res.status(401).json({ message: 'Autenticación fallida' });
     }
   };
 };

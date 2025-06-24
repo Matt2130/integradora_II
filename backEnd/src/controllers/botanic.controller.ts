@@ -3,12 +3,12 @@ import BotanicInventory from '../models/Botanic';
 
 export const createBotanicInventory = async (req: Request, res: Response) => {
   try {
-    const count = await BotanicInventory.countDocuments();// Verificar cantidad actual de documentos, hasta llegar a un max de 50
+    const count = await BotanicInventory.countDocuments(); // Check current number of documents, up to a max of 50
     if (count >= 50) {
       return res.status(400).json({ message: 'Límite máximo de 50 módulos alcanzado. Elimina alguno para agregar uno nuevo.' });
     }
 
-    const { name } = req.body;// Verificar nombre único
+    const { name } = req.body;// Check unique name
     const existing = await BotanicInventory.findOne({ name });
     if (existing) {
       return res.status(409).json({ message: 'Ya existe un módulo con ese nombre.' });

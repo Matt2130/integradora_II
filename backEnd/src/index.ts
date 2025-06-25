@@ -4,16 +4,17 @@ import authRoutes from './routes/auth.routes';
 import QRRoutes from './routes/qr.routes';
 import toolInventoryRoutes from './routes/toolInventory.routes';
 import botanicInventoryRoutes from "./routes/botanicInvetory.routes";
+import labViewRoutes from './routes/labView.routes'
 import connectDB from './config/db';
 import 'dotenv/config';
 import cors from 'cors';
-import { ToolInventory } from './models/Tool';
 
 const app = express();
 const PORT = process.env.PORT_SERVER as string;
 
 // Configurar CORS para múltiples orígenes
 const allowedOrigins = [process.env.URL_FRONT, process.env.URL_MOBILE];
+
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -35,6 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/botanic', botanicInventoryRoutes)
 app.use('/api/qr', QRRoutes);
 app.use('/api/toolInventory', toolInventoryRoutes);
+app.use('/api/labView', labViewRoutes);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

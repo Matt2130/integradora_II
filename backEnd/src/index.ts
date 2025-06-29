@@ -1,11 +1,14 @@
 import express from 'express';
 import morgan from 'morgan';
+
 import authRoutes from './routes/auth.routes';
 import QRRoutes from './routes/qr.routes';
 import toolInventoryRoutes from './routes/toolInventory.routes';
 import botanicInventoryRoutes from "./routes/botanicInvetory.routes";
 import labViewRoutes from './routes/labView.routes'
 import userRoutes from './routes/users.routes';
+import reportRoutes from './routes/report.routes'
+
 import connectDB from './config/db';
 import 'dotenv/config';
 import cors from 'cors';
@@ -39,6 +42,8 @@ app.use('/api/qr', QRRoutes);
 app.use('/api/toolInventory', toolInventoryRoutes);
 app.use('/api/labView', labViewRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/reports', reportRoutes);
+
 
 connectDB().then(() => {
   app.listen(PORT, () => {

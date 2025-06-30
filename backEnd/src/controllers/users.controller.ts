@@ -19,7 +19,7 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "El correo electrónico no tiene un formato válido." });
     }
 
-    if (password.length < 8) {
+    if (typeof password !== 'string' || password.length < 8) {
       return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres." });
     }
 
@@ -144,9 +144,10 @@ export const updateDataUser = async (req: Request, res: Response) => {
 
     // Validación de nueva contraseña
     if (newPassword) {
-      if (newPassword.length < 8) {
+      if (typeof newPassword === 'string' && newPassword.length < 8) {
         return res.status(400).json({ message: "La nueva contraseña debe tener al menos 8 caracteres." });
       }
+      
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
       user.password = hashedPassword;

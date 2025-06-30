@@ -1,37 +1,42 @@
-import { Request, Response } from "express";
+import { Request, Response, RequestHandler } from "express";
 import {
   createQRSession,
   getTokenForQR,
   linkTokenToQR,
 } from "../utils/qrCache";
 
-export const handleCreateQR = (req: Request, res: Response) => {
+export const handleCreateQR: RequestHandler = (req, res) => {
   const { sessionCode } = req.body;
   if (!sessionCode) {
-    return res.status(400).json({ message: "sessionCode requerido" });
+    res.status(400).json({ message: "sessionCode requerido" });
+    return;
   }
   createQRSession(sessionCode);
-  return res.sendStatus(200);
+  res.sendStatus(200);
 };
 
-export const handleLinkToken = (req: Request, res: Response) => {
+export const handleLinkToken: RequestHandler = (req, res) => {
   const { sessionCode } = req.body;
   const token = req.headers.authorization?.replace("Bearer ", "");
 
   if (!sessionCode || !token) {
-    return res.status(400).json({ message: "Token y sessionCode requeridos" });
+    res.status(400).json({ message: "Token y sessionCode requeridos" });
+    return;
   }
 
   const success = linkTokenToQR(sessionCode, token);
-  return success
-    ? res.sendStatus(200)
-    : res.status(404).json({ message: "Código no válido o expirado" });
+  if (success) {
+    res.sendStatus(200);
+  } else {
+    res.status(404).json({ message: "Código no válido o expirado" });
+  }
 };
 
-export const handleQRStatus = (req: Request, res: Response) => {
+export const handleQRStatus: RequestHandler = (req, res) => {
   const { sessionCode } = req.params;
   if (!sessionCode) {
-    return res.status(400).json({ message: "sessionCode requerido" });
+    res.status(400).json({ message: "sessionCode requerido" });
+    return;
   }
 
   const token = getTokenForQR(sessionCode);

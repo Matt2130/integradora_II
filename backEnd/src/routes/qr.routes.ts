@@ -12,3 +12,4 @@ router.post("/link", handleLinkToken);
 router.get("/status/:sessionCode", handleQRStatus);
 
 export default router;
+

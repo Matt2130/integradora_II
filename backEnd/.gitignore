@@ -16,7 +16,6 @@ yarn.lock
 
 src/assets/credentials.json
 
-
 # Ignorar archivos de logs
 npm-debug.log*
 yarn-debug.log*

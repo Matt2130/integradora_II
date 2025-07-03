@@ -2,7 +2,11 @@ import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { User } from "../models/User"
 import { generateAccessToken } from "../utils/token";
+import jwt from "jsonwebtoken";
 import { cache } from "../utils/cache";
+const { publishEmail } = require('C:/integradora_II/emailService/src/producers/emailProducer');
+const { getWelcomeTemplate } = require('C:/integradora_II/emailService/src/templates/welcomeTemplate');
+const { getResetPasswordTemplate } = require('C:/integradora_II/emailService/src/templates/resetPasswordTemplate');
 
 //En este archivo hay metodos relacionados con la administracion de los users CRUD básico
 
@@ -56,6 +60,12 @@ export const createUser = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(userId, savedUser.role);
     //almacenar el token al crear usuario
     cache.set(userId, accessToken, 60 * 15);
+
+    await publishEmail({
+      to: email,
+      subject: "Bienvenid@s a SUUDAI ACUAPONIA",
+      html: getWelcomeTemplate(firstName)
+    });
 
     return res.status(201).json({ message: "Usuario creado correctamente", user: savedUser, accessToken });
 
@@ -190,5 +200,53 @@ export const deleteUser = async (req:Request, res:Response) => {
   
   } catch (error) {
       return res.status(500).json({ message: "Error al querer dar de baja al usuario", error });
+  }
+};
+
+export const requestPasswordReset = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "Usuario no encontrado." });
+  }
+
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET as string, { expiresIn: '30m' });
+
+  const resetLink = `${token}`;
+
+  console.log(token);
+
+  await publishEmail({
+    to: email,
+    subject: "Restablece tu contraseña - SUUDAI ACUAPONIA",
+    html: getResetPasswordTemplate(user.firstName, resetLink)
+  });
+
+  res.status(200).json({ message: "Correo enviado para restablecer contraseña." });
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string };
+
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado." });
+    }
+
+    if (typeof newPassword !== 'string' || newPassword.length < 8) {
+      return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres." });
+    }
+
+    const salt = await bcrypt.genSalt(12);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.status(200).json({ message: "Contraseña actualizada correctamente." });
+  } catch (error) {
+    res.status(400).json({ message: "Token inválido o expirado." });
   }
 };

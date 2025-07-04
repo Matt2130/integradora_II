@@ -4,9 +4,9 @@ import { User } from "../models/User"
 import { generateAccessToken } from "../utils/token";
 import jwt from "jsonwebtoken";
 import { cache } from "../utils/cache";
-const { publishEmail } = require('C:/integradora_II/emailService/src/producers/emailProducer');
-const { getWelcomeTemplate } = require('C:/integradora_II/emailService/src/templates/welcomeTemplate');
-const { getResetPasswordTemplate } = require('C:/integradora_II/emailService/src/templates/resetPasswordTemplate');
+const { publishEmail } = require('../../../emailService/src/producers/emailProducer');
+const { getWelcomeTemplate } = require('../../../emailService/src/templates/welcomeTemplate');
+const { getResetPasswordTemplate } = require('../../../emailService/src/templates/resetPasswordTemplate');
 
 //En este archivo hay metodos relacionados con la administracion de los users CRUD básico
 

@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createBotanicInventory, getAllInventories, getInventoryById, updateInventory, deletePlantFromInventory } from "../controllers/botanic.controller";
+import { createBotanicInventory, getAllInventories, getInventoryById, updateInventoryByPlantName, deletePlantFromInventoryByName } from "../controllers/botanic.controller";
 import { verifyUserByToken } from "../controllers/auth.controller";
 
 const router = Router();
@@ -13,11 +13,11 @@ router.get('/getAll/Inventory', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']),
 router.get('/getById/:id', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']), (req: Request, res: Response) => {
     getInventoryById(req, res);
 });
-router.put('/updateInventory/data/:id', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']), (req: Request, res: Response) => {
-     updateInventory(req, res);
+router.put('/updateInventory/data/:name', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']), (req: Request, res: Response) => {
+     updateInventoryByPlantName(req, res);
 });
-router.delete('/deletePlant/:id', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']), (req: Request, res: Response) => {
-    deletePlantFromInventory(req, res);
+router.delete('/deletePlant/:name', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']), (req: Request, res: Response) => {
+    deletePlantFromInventoryByName(req, res);
 });
 
 export default router;

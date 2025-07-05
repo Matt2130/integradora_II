@@ -4,9 +4,8 @@ import { User } from "../models/User"
 import { generateAccessToken } from "../utils/token";
 import jwt from "jsonwebtoken";
 import { cache } from "../utils/cache";
-const { publishEmail } = require('../../../emailService/src/producers/emailProducer');
-const { getWelcomeTemplate } = require('../../../emailService/src/templates/welcomeTemplate');
-const { getResetPasswordTemplate } = require('../../../emailService/src/templates/resetPasswordTemplate');
+import amqp from 'amqplib';
+import { publishEmail } from "../services/emailQueueService";
 
 //En este archivo hay metodos relacionados con la administracion de los users CRUD básico
 
@@ -56,21 +55,57 @@ export const createUser = async (req: Request, res: Response) => {
 
     const savedUser = await newUser.save();
 
+    await publishEmail({
+      type: 'welcome',
+      data: {
+        to: savedUser.email,
+        name: savedUser.firstName // Usamos 'name' para coincidir con tu plantilla
+      }
+    });
+
     const userId = savedUser._id.toString();
     const accessToken = generateAccessToken(userId, savedUser.role);
     //almacenar el token al crear usuario
     cache.set(userId, accessToken, 60 * 15);
 
-    await publishEmail({
-      to: email,
-      subject: "Bienvenid@s a SUUDAI ACUAPONIA",
-      html: getWelcomeTemplate(firstName)
+/*     // Conexión AMQP para publicar el email
+    try {
+      const connection = await amqp.connect(process.env.CLOUDAMQP_URL!);
+      const channel = await connection.createChannel();
+      await channel.assertQueue("emailQueue", { durable: true });
+      
+      const welcomeEmail = {
+        to: savedUser.email,
+        subject: "Bienvenid@s a SUUDAI ACUAPONIA",
+        html: `<h1>Bienvenido ${savedUser.firstName}</h1>
+               <p>Gracias por registrarte en nuestra plataforma</p>`
+      };
+      
+      channel.sendToQueue(
+        "emailQueue",
+        Buffer.from(JSON.stringify(welcomeEmail)),
+        { persistent: true }
+      );
+      
+      setTimeout(() => {
+        connection.close();
+      }, 500);
+    } catch (amqpError) {
+      console.error("Error al enviar email a la cola:", amqpError);
+      // No fallar la creación de usuario solo por el email
+    }
+ */
+    return res.status(201).json({ 
+      message: "Usuario creado correctamente", 
+      user: savedUser, 
+      accessToken 
     });
 
-    return res.status(201).json({ message: "Usuario creado correctamente", user: savedUser, accessToken });
-
   } catch (error) {
-      return res.status(500).json({ message: "Error interno al crear usuario.", error });
+    return res.status(500).json({ 
+      message: "Error interno al crear usuario.", 
+      error: error instanceof Error ? error.message : error 
+    });
   }
 };
 
@@ -203,27 +238,38 @@ export const deleteUser = async (req:Request, res:Response) => {
   }
 };
 
+// backEnd/src/controllers/authController.ts
 export const requestPasswordReset = async (req: Request, res: Response) => {
-  const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: "Usuario no encontrado." });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado." });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id }, 
+      process.env.JWT_SECRET as string, 
+      { expiresIn: '30m' }
+    );
+
+    await publishEmail({
+      type: 'resetPassword',
+      data: {
+        to: user.email,
+        name: user.firstName, // o firstName según necesites
+        token
+      }
+    });
+
+    console.log(token)
+
+    res.status(200).json({ message: "Correo enviado para restablecer contraseña." });
+  } catch (error) {
+    console.error("Error en requestPasswordReset:", error);
+    res.status(500).json({ message: "Error al procesar la solicitud." });
   }
-
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET as string, { expiresIn: '30m' });
-
-  const resetLink = `${token}`;
-
-  console.log(token);
-
-  await publishEmail({
-    to: email,
-    subject: "Restablece tu contraseña - SUUDAI ACUAPONIA",
-    html: getResetPasswordTemplate(user.firstName, resetLink)
-  });
-
-  res.status(200).json({ message: "Correo enviado para restablecer contraseña." });
 };
 
 export const resetPassword = async (req: Request, res: Response) => {

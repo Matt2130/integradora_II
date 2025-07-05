@@ -43,7 +43,7 @@ export const getInventoryById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateInventoryByPlantName = async (req: Request, res: Response) => {
+export const updateInventoryByName = async (req: Request, res: Response) => {
   try {
     const { name } = req.params;
 

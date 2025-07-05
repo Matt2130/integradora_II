@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createBotanicInventory, getAllInventories, getInventoryById, updateInventoryByPlantName, deletePlantFromInventoryByName } from "../controllers/botanic.controller";
+import { createBotanicInventory, getAllInventories, getInventoryById, updateInventoryByName, deletePlantFromInventoryByName } from "../controllers/botanic.controller";
 import { verifyUserByToken } from "../controllers/auth.controller";
 
 const router = Router();
@@ -14,7 +14,7 @@ router.get('/getById/:id', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']), (req
     getInventoryById(req, res);
 });
 router.put('/updateInventory/data/:name', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']), (req: Request, res: Response) => {
-     updateInventoryByPlantName(req, res);
+     updateInventoryByName(req, res);
 });
 router.delete('/deletePlant/:name', verifyUserByToken(['Adm1ni$trad0r','B0t4nic0']), (req: Request, res: Response) => {
     deletePlantFromInventoryByName(req, res);

@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createUser, getAllUsers, getUserByEmail, updateDataUser, deleteUser, requestPasswordReset, resetPassword } from "../controllers/users.controller";
+import { createUser, getAllUsers, getUserByEmail, updateDataUser, deleteUser, requestPasswordReset, resetPassword, getUserById } from "../controllers/users.controller";
 import { verifyUserByToken } from "../controllers/auth.controller";
 
 const router = Router();
@@ -14,6 +14,9 @@ router.get('/getAllUsers', verifyUserByToken(['Adm1ni$trad0r']), (req: Request, 
 });
 router.get('/getUser/:email', verifyUserByToken(['Adm1ni$trad0r']), (req: Request, res: Response) => {
   getUserByEmail(req, res);
+});
+router.get('/getUserbyId/:userId', verifyUserByToken(['Adm1ni$trad0r']), (req: Request, res: Response) => {
+  getUserById(req, res);
 });
 router.put('/updateDataUser/:userId', verifyUserByToken(['Adm1ni$trad0r']), (req: Request, res: Response) => {
   updateDataUser(req, res);

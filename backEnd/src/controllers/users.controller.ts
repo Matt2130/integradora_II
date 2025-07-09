@@ -4,7 +4,6 @@ import { User } from "../models/User"
 import { generateAccessToken } from "../utils/token";
 import jwt from "jsonwebtoken";
 import { cache } from "../utils/cache";
-import amqp from 'amqplib';
 import { publishEmail } from "../services/emailQueueService";
 
 //En este archivo hay metodos relacionados con la administracion de los users CRUD básico
@@ -68,33 +67,6 @@ export const createUser = async (req: Request, res: Response) => {
     //almacenar el token al crear usuario
     cache.set(userId, accessToken, 60 * 15);
 
-/*     // Conexión AMQP para publicar el email
-    try {
-      const connection = await amqp.connect(process.env.CLOUDAMQP_URL!);
-      const channel = await connection.createChannel();
-      await channel.assertQueue("emailQueue", { durable: true });
-      
-      const welcomeEmail = {
-        to: savedUser.email,
-        subject: "Bienvenid@s a SUUDAI ACUAPONIA",
-        html: `<h1>Bienvenido ${savedUser.firstName}</h1>
-               <p>Gracias por registrarte en nuestra plataforma</p>`
-      };
-      
-      channel.sendToQueue(
-        "emailQueue",
-        Buffer.from(JSON.stringify(welcomeEmail)),
-        { persistent: true }
-      );
-      
-      setTimeout(() => {
-        connection.close();
-      }, 500);
-    } catch (amqpError) {
-      console.error("Error al enviar email a la cola:", amqpError);
-      // No fallar la creación de usuario solo por el email
-    }
- */
     return res.status(201).json({ 
       message: "Usuario creado correctamente", 
       user: savedUser, 
@@ -128,6 +100,22 @@ export const getUserByEmail = async (req: Request, res: Response) => {
         }
 
         return res.status(200).json({ userEmail });// Si se encuentra, devolverlo
+
+    } catch (error) {
+        return res.status(500).json({ message: "Error al buscar usuario", error });
+    }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        const userPK = await User.findOne({ _id: userId }); // Mi función para buscar por userId
+
+        if (!userPK) {
+            return res.status(404).json({ message: "Usuario no encontrado", userPK });
+        }
+
+        return res.status(200).json({ userPK });// Si se encuentra, devolverlo
 
     } catch (error) {
         return res.status(500).json({ message: "Error al buscar usuario", error });

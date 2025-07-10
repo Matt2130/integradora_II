@@ -15,7 +15,7 @@ router.get('/getAllUsers', verifyUserByToken(['Adm1ni$trad0r']), (req: Request, 
 router.get('/getUser/:email', verifyUserByToken(['Adm1ni$trad0r']), (req: Request, res: Response) => {
   getUserByEmail(req, res);
 });
-router.get('/getUserbyId/:userId', verifyUserByToken(['Adm1ni$trad0r']), (req: Request, res: Response) => {
+router.get('/getUserbyId/:userId', (req: Request, res: Response) => {
   getUserById(req, res);
 });
 router.put('/updateDataUser/:userId', verifyUserByToken(['Adm1ni$trad0r']), (req: Request, res: Response) => {

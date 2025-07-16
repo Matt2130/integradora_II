@@ -1,26 +1,32 @@
-// emailService/src/producers/emailProducer.ts
 import { connectAMQP } from "../config/amqpConfig";
 
-export const publishEmail = async ({ to, subject, html }: { 
-  to: string, 
-  subject: string, 
-  html: string 
+export const publishEmail = async ({
+  type,
+  data
+}: {
+  type: 'welcome' | 'resetPassword';
+  data: {
+    to: string;
+    name?: string;
+    token?: string;
+    link?: string;
+  };
 }): Promise<boolean> => {
   try {
     const message = {
-      to,
-      subject,
-      html
+      type,
+      data
     };
-    
+
     const channel = await connectAMQP();
-    await channel.assertQueue("emailQueue", { durable: true }); // Que el mensaje no se elimine al apagar los servicios
+    await channel.assertQueue("emailQueue", { durable: true });
+
     const sent = channel.sendToQueue(
-      "emailQueue", 
+      "emailQueue",
       Buffer.from(JSON.stringify(message)),
-      { persistent: true } 
+      { persistent: true }
     );
-    
+
     return sent;
   } catch (error) {
     console.error("Error publishing email to queue:", error);

@@ -302,32 +302,35 @@ export const deleteUser = async (req:Request, res:Response) => {
   }
 };
 
-// backEnd/src/controllers/authController.ts
 export const requestPasswordReset = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 
+    // Buscar al usuario por su correo
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado." });
     }
 
+    // Generar el token JWT
     const token = jwt.sign(
-      { userId: user._id }, 
-      process.env.JWT_SECRET as string, 
+      { userId: user._id },
+      process.env.JWT_SECRET as string,
       { expiresIn: '30m' }
     );
+
+    const encodedToken = encodeURIComponent(token);
+
+    const resetLink = `${process.env.RESET_PASSWORD_URL}?token=${encodedToken}`;
 
     await publishEmail({
       type: 'resetPassword',
       data: {
         to: user.email,
-        name: user.firstName, // o firstName según necesites
-        token
+        name: user.firstName,
+        token: resetLink 
       }
     });
-
-    console.log(token)
 
     res.status(200).json({ message: "Correo enviado para restablecer contraseña." });
   } catch (error) {

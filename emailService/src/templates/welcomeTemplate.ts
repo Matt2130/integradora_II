@@ -25,12 +25,6 @@ export const getWelcomeTemplate = (name: string) => {
           Gracias por tu registro!
         </p>
 
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="https://github.com/Matt2130/integradora_II" target="_blank"
-            style="background-color: #09392C; color: #FFFFFF; text-decoration: none; padding: 12px 24px; border-radius: 4px; display: inline-block;">
-            Go to Dashboard
-          </a>
-        </div>
 
         <p style="font-size: 14px; color: #257C65; text-align: center;">
           Developed by <strong>Aetherion Technologies</strong>

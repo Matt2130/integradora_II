@@ -48,3 +48,18 @@ export const createSensorRegister = async (req: Request, res: Response) => {
     });
   }
 }
+
+export const getLastSensorRegister = async (req: Request, res: Response) => {
+  try {
+    const lastRegister = await SensorData.findOne({ status: true }).sort({ createDate: -1 });
+    if (!lastRegister) {
+      return res.status(404).json({ message: 'No hay registros de sensores.' });
+    }
+    res.status(200).json({ data: lastRegister });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error al obtener el último registro',
+      detalles: error instanceof Error ? error.message : String(error),
+    });
+  }
+};

@@ -4,7 +4,6 @@ import { User } from "../models/User"
 import { generateAccessToken } from "../utils/token";
 import jwt from "jsonwebtoken";
 import { cache } from "../utils/cache";
-import amqp from 'amqplib';
 import { publishEmail } from "../services/emailQueueService";
 
 //En este archivo hay metodos relacionados con la administracion de los users CRUD básico

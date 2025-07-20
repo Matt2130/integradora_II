@@ -63,3 +63,25 @@ export const getLastSensorRegister = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getAllSensorRegisters = async (req: Request, res: Response) => {
+  try {
+    const allRegisters = await SensorData.find({ status: true }).sort({ createDate: -1 });
+
+    if (allRegisters.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron registros de sensores.' });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: allRegisters.length,
+      data: allRegisters,
+    });
+  } catch (error) {
+    console.error('Error al obtener todos los registros:', error);
+    res.status(500).json({
+      error: 'Error al obtener todos los registros',
+      detalles: error instanceof Error ? error.message : String(error),
+    });
+  }
+};

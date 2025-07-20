@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import bodyParser from 'body-parser';
-import { createSensorRegister, getLastSensorRegister } from '../controllers/sensor.controller';
+import { createSensorRegister, getLastSensorRegister, getAllSensorRegisters } from '../controllers/sensor.controller';
 
 const router = Router();
 
@@ -13,6 +13,10 @@ router.post('/createData', (req, res) => {
 
 router.get('/lastRegister', async (req, res) => {
   getLastSensorRegister(req, res);
+});
+
+router.get('/allRegisters', async (req, res) => {
+  getAllSensorRegisters(req, res);
 });
 
 export default router;

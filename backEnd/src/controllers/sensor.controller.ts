@@ -1,35 +1,76 @@
 import { Request, Response } from 'express';
 import { SensorData } from '../models/Sensor';
+import { broadcastAlert, getThresholds, clients } from '../Websocket/websocket';
+
 
 export const createSensorRegister = async (req: Request, res: Response) => {
-    try {
+  try {
     let jsonData;
-    
+
     if (req.headers['content-type']?.includes('application/json')) {
       jsonData = req.body;
-    }
-    else {
+    } else {
       const rawData = Object.keys(req.body)[0];
       jsonData = JSON.parse(rawData);
     }
 
     const { Temperatura, PH, Conductividad, Nivel } = jsonData;
-    
+
     if ([Temperatura, PH, Conductividad, Nivel].some(v => typeof v !== 'number')) {
       return res.status(400).json({ error: 'Todos los valores deben ser numéricos' });
     }
 
-
     const nuevoRegistro = new SensorData({
       sensors: [{
-        temperature : Temperatura,
-        ph : PH,
-        conductivity : Conductividad,
-        level : Nivel
-      }],
+        temperature: Temperatura,
+        ph: PH,
+        conductivity: Conductividad,
+        level: Nivel
+      }]
     });
 
     await nuevoRegistro.save();
+
+    const thresholds = getThresholds();
+
+    console.log('Umbrales actuales:', thresholds);
+    console.log('Valores recibidos:', { Temperatura, PH, Conductividad, Nivel });
+
+    const alerts: string[] = [];
+
+    if (Temperatura < thresholds.temperature.min || Temperatura > thresholds.temperature.max) {
+      console.log("Alerta Temperatura");
+      alerts.push(' Temperatura fuera de rango');
+    }
+
+    if (PH < thresholds.ph.min || PH > thresholds.ph.max) {
+      console.log("Alerta PH");
+      alerts.push(' PH fuera de rango');
+    }
+
+    if (Conductividad < thresholds.conductivity.min || Conductividad > thresholds.conductivity.max) {
+      console.log("Alerta Conductividad");
+      alerts.push(' Conductividad fuera de rango');
+    }
+
+    if (Nivel < thresholds.level.min || Nivel > thresholds.level.max) {
+      console.log("Alerta Nivel");
+      alerts.push(' Nivel de agua fuera de rango');
+    }
+
+    console.log('Alertas detectadas:', alerts);
+
+    if (alerts.length > 0) {
+      console.log("Clientes conectados al WebSocket:", clients.size);
+      broadcastAlert({
+        timestamp: new Date(),
+        data: { Temperatura, PH, Conductividad, Nivel },
+        alerts
+      });
+      console.log("broadcastAlert enviado");
+    } else {
+      console.log("No hay alertas para enviar");
+    }
 
     res.status(201).json({
       success: true,
@@ -37,17 +78,16 @@ export const createSensorRegister = async (req: Request, res: Response) => {
       data: nuevoRegistro
     });
 
-    
-
   } catch (error) {
     console.error('Error:', error);
     res.status(400).json({
       error: 'Error procesando datos',
-      detalles: error instanceof Error ? error.message : String(error),
-      formato_esperado: 'JSON directo o form-data con JSON stringificado'
+      detalles: error instanceof Error ? error.message : String(error)
     });
   }
-}
+};
+
+
 
 export const getLastSensorRegister = async (req: Request, res: Response) => {
   try {

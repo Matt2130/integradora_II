@@ -25,7 +25,7 @@ export const createSensorRegister = async (req: Request, res: Response) => {
         temperature: Temperatura,
         ph: PH,
         conductivity: Conductividad,
-        level: Nivel
+        level: Nivel,
       }]
     });
 
@@ -33,59 +33,69 @@ export const createSensorRegister = async (req: Request, res: Response) => {
 
     const thresholds = getThresholds();
 
-    console.log('Umbrales actuales:', thresholds);
-    console.log('Valores recibidos:', { Temperatura, PH, Conductividad, Nivel });
+    const alertsDetected: string[] = [];
 
-    const alerts: string[] = [];
+    // SOLO ENVÍA ALERTA si valor está FUERA DEL RANGO (menor al mínimo o mayor al máximo)
 
     if (Temperatura < thresholds.temperature.min || Temperatura > thresholds.temperature.max) {
-      console.log("Alerta Temperatura");
-      alerts.push(' Temperatura fuera de rango');
+      alertsDetected.push('Temperatura fuera de rango');
+
+      broadcastAlert({
+        sensor: 'temperature',
+        value: Temperatura,
+        alertType: Temperatura < thresholds.temperature.min ? 'BAJA' : 'ALTA',
+        parameter: 'Temperatura'
+      });
     }
 
     if (PH < thresholds.ph.min || PH > thresholds.ph.max) {
-      console.log("Alerta PH");
-      alerts.push(' PH fuera de rango');
+      alertsDetected.push('PH fuera de rango');
+
+      broadcastAlert({
+        sensor: 'ph',
+        value: PH,
+        alertType: PH < thresholds.ph.min ? 'BAJA' : 'ALTA',
+        parameter: 'PH'
+      });
     }
 
     if (Conductividad < thresholds.conductivity.min || Conductividad > thresholds.conductivity.max) {
-      console.log("Alerta Conductividad");
-      alerts.push(' Conductividad fuera de rango');
+      alertsDetected.push('Conductividad fuera de rango');
+
+      broadcastAlert({
+        sensor: 'conductivity',
+        value: Conductividad,
+        alertType: Conductividad < thresholds.conductivity.min ? 'BAJA' : 'ALTA',
+        parameter: 'Conductividad'
+      });
     }
 
     if (Nivel < thresholds.level.min || Nivel > thresholds.level.max) {
-      console.log("Alerta Nivel");
-      alerts.push(' Nivel de agua fuera de rango');
-    }
+      alertsDetected.push('Nivel de agua fuera de rango');
 
-    console.log('Alertas detectadas:', alerts);
-
-    if (alerts.length > 0) {
-      console.log("Clientes conectados al WebSocket:", clients.size);
       broadcastAlert({
-        timestamp: new Date(),
-        data: { Temperatura, PH, Conductividad, Nivel },
-        alerts
+        sensor: 'level',
+        value: Nivel,
+        alertType: Nivel < thresholds.level.min ? 'BAJA' : 'ALTA',
+        parameter: 'Nivel'
       });
-      console.log("broadcastAlert enviado");
-    } else {
-      console.log("No hay alertas para enviar");
     }
 
     res.status(201).json({
       success: true,
       message: 'Registro de sensor guardado correctamente',
-      data: nuevoRegistro
+      data: nuevoRegistro,
+      alerts: alertsDetected
     });
 
   } catch (error) {
-    console.error('Error:', error);
     res.status(400).json({
       error: 'Error procesando datos',
       detalles: error instanceof Error ? error.message : String(error)
     });
   }
 };
+
 
 
 
